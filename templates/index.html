@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+  <!-- Bootstrap core CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Material Design Bootstrap -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.1/css/mdb.min.css" rel="stylesheet">
+<style>
+.hide{
+    display: none;
+}
+td{
+  padding-top: .6rem;
+    padding-bottom: .6rem;
+    border-color: #32383e;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+    font-size: .9rem;
+    font-weight: 300;
+    display: table-cell;
+    width: 91px;
+    background-color: #222528;
+    color: #ffffff;
+}
+.graph{
+  padding-top: 30px
+}
+.abtn{
+  background-color: #757575;
+  width: 100px;
+ 
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Content here -->
+  <div class="card">
+
+    <h5 class="card-header info-color white-text text-center py-4">
+        <strong>Sign up</strong>
+    </h5>
+
+    <!--Card content-->
+    <div class="card-body px-lg-5 pt-0">
+
+        <!-- Form -->
+        <form style="color: #757575;" enctype="multipart/form-data" method="POST" action="/graph/upload-csv-file/">
+          {% csrf_token %}
+            <div class="form-row">
+                <div class="col">
+                    <!-- Last name -->
+                    <div class="md-form">
+                        <input type="file" name="csv_file" id="materialRegisterFormLastName" class="form-control">
+                    </div>
+                </div>
+            </div>
+            
+           <button class="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0 " id="submit" type="submit">Submit</button>
+            <hr>
+        </form>
+        {% if is_csv %}
+          <div class="form-row">
+            <div class="col">
+                <!-- Last name -->
+                <div class="md-form">
+                    <input type="text" name="input" id="input_value" class="form-control">
+                    <label for="materialRegisterFormFirstName">Input</label>
+                </div>
+            </div>
+            <div class="col">
+                <!-- Last name -->
+                <div class="md-form">
+                    <input type="text" name="output" id="output_value" class="form-control">
+                    <label for="materialRegisterFormFirstName">Output</label>
+                </div>
+                
+            </div>
+        </div>
+        {% else %}
+      <div class="form-row"></div>
+      {% endif %}
+        
+        <!-- Form -->
+    </div>
+  </div>
+  
+</div>
+{% if messages %}
+<ul class="messages mt-4">
+    {% for message in messages %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+</ul>
+{% endif %}
+<!-- <div id="csvData">
+
+    
+
+</div> -->
+<div class="container csvContainer" id="csvContainer">
+        
+</div>
+
+<div class="container graph" id="graph">
+  <select class="input_dropdown" id="input_dropdown">
+    <option value="None">--Select--</option>
+  </select> 
+  <select class="output_dropdown" id="output_dropdown">
+    <option value="None">--Select--</option>
+  </select>   
+  <a type="button" class="abtn" id="chart-show">show chart</a>
+  <!-- <canvas id="myChart" width="500" height="400"></canvas>
+  <div id ="chartContainer" style="height:300px; width:100%">
+  </div> -->
+</div>
+<div class="chart-show-final">
+<!-- <canvas id="myChart" width="500" height="400"></canvas> -->
+  <div id ="chartContainer" style="height:300px; width:100%">
+  </div>
+</div>
+
+<!-- JQuery -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.1/js/mdb.min.js"></script>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+
+
+<script type="text/javascript">
+$('#chart-show').on('click', function(e){
+  var drop_x  = $('#input_dropdown').val();
+  var drop_y  = $('#output_dropdown').val();
+  var x =[]
+      var y =[]
+
+      let chosenHeaderText_x = drop_x,
+        tableHeaders_x = $('.dataframe th'),
+        chosenHeader_x = tableHeaders_x.filter(function(header) {
+            return tableHeaders_x[header].innerHTML == chosenHeaderText_x;
+        });
+        chosenHeaderIndex = chosenHeader_x[0].cellIndex + 1,
+        columns = $('.dataframe tr td:nth-child(' + chosenHeaderIndex + ')');
+        columns.each(function(col) {
+        console.log(columns[col].innerHTML);
+        x.push(parseFloat(columns[col].innerHTML))
+    });  
+
+    let chosenHeaderText_y = drop_y,
+        tableHeaders_y = $('.dataframe th'),
+        chosenHeader_y = tableHeaders_y.filter(function(header) {
+            return tableHeaders_y[header].innerHTML == chosenHeaderText_y;
+        });
+        chosenHeaderIndex = chosenHeader_y[0].cellIndex + 1,
+        columns = $('.dataframe tr td:nth-child(' + chosenHeaderIndex + ')');
+        columns.each(function(col) {
+        console.log(columns[col].innerHTML);
+        y.push(parseFloat(columns[col].innerHTML))
+    });  
+    console.log(x)
+    console.log(y)
+      // console.log(msg['x'])
+      var d =[]
+      for (var i=0; i<x.length; i++){
+        
+        d.push({'x':x[i],'y':y[i]})
+
+      }
+      
+      var chart = new CanvasJS.Chart("chartContainer",
+      {
+        title:{
+
+       },
+        data:[
+          {
+          type: "line",
+          dataPoints:d
+          }
+        ]
+      });
+      chart.render()
+
+
+}) 
+
+</script>
+
+
+<script type="text/javascript">
+  $("#output_value").change(function(e){
+    e.preventDefault();
+      var input = $('#input_value').val();
+      var output = $('#output_value').val();
+      $.ajax({
+        type:"POST",
+        url: "/graph/upload-csv/",
+        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+        data:{
+          input: input,
+          output: output,
+        },
+        success: function( data ) {
+          $('#csvContainer').append(data.lines);  
+          console.log("drp")
+          $.each(data.col_x, function (i,item) {
+            $('#input_dropdown').append($('<option>',{
+              value:item,
+              text:item
+            }));  
+          });
+          $.each(data.col_y, function (i,item) {
+            $('#output_dropdown').append($('<option>',{
+              value:item,
+              text:item
+            }));  
+          });
+
+          $('#csvData').show();
+          $('#graph').show();
+          $('#chart-show-final').show();
+        },
+        error: function(data){
+           alert(data.status); // the status code
+           alert(data.responseJSON.error); // the message
+        }
+  })
+
+});
+
+  $(document).ready(function(){
+    $("#csvData").hide()
+    $('#graph').hide();
+    $('#chart-show-final').hide();
+
+
+  });
+
+</script>
+
+
+</body>
+</html>
